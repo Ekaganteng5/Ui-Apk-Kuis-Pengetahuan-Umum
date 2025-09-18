@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Kuis Pengetahuan Umum</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Mencegah highlight saat disentuh */
+        }
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Tinggi penuh viewport */
+        }
+        .answer-btn {
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+        .answer-btn:hover:not([disabled]) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .answer-btn .feedback-icon {
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .correct {
+            background-color: #dcfce7 !important; /* green-100 */
+            color: #166534 !important; /* green-800 */
+            border-color: #22c55e !important; /* green-500 */
+            font-weight: 600;
+        }
+        .incorrect {
+            background-color: #fee2e2 !important; /* red-100 */
+            color: #991b1b !important; /* red-800 */
+            border-color: #ef4444 !important; /* red-500 */
+        }
+        .correct .feedback-icon, .incorrect .feedback-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .question-fade-enter {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .question-fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.4s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+
+    <div id="quiz" class="quiz-container max-w-lg mx-auto bg-white dark:bg-gray-800">
+        <!-- Header dengan Progress Bar -->
+        <header class="p-4 md:p-6">
+            <h1 class="text-xl font-bold text-center text-indigo-600 dark:text-indigo-400">Kuis Pengetahuan Umum</h1>
+            <p id="progress-text" class="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">Pertanyaan 1 dari 10</p>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-3">
+                <div id="progress-bar" class="bg-indigo-600 dark:bg-indigo-500 h-2.5 rounded-full" style="width: 10%; transition: width 0.5s ease-in-out;"></div>
+            </div>
+        </header>
+
+        <!-- Konten Utama Kuis -->
+        <main class="flex-grow p-4 md:p-6 flex flex-col justify-center">
+            <div id="question-container">
+                <h2 id="question" class="text-2xl font-semibold mb-8 text-center min-h-[96px]">Pertanyaan akan muncul di sini...</h2>
+                <div id="answer-buttons" class="grid grid-cols-1 gap-4">
+                    <!-- Tombol jawaban akan dibuat oleh JavaScript -->
+                </div>
+            </div>
+
+            <div id="result-container" class="hidden text-center">
+                 <div class="flex justify-center mb-6">
+                    <svg class="w-24 h-24 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                 </div>
+                 <h2 class="text-2xl font-bold mb-2">Kuis Selesai!</h2>
+                 <p id="score-text" class="text-4xl font-bold my-4 text-indigo-600 dark:text-indigo-400">0 / 10</p>
+                 <p id="result-feedback" class="text-gray-600 dark:text-gray-400">Teruslah berlatih!</p>
+            </div>
+        </main>
+        
+        <!-- Footer dengan Tombol Aksi -->
+        <footer class="p-4 md:p-6">
+            <button id="next-btn" class="w-full px-8 py-4 font-bold text-lg text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">Mulai Kuis</button>
+        </footer>
+    </div>
+
+    <script>
+        const questions = [
+            // ... (Pertanyaan tetap sama dari file sebelumnya) ...
+             { question: "Apa ibukota dari negara Indonesia?", answers: [{ text: "Bandung", correct: false }, { text: "Jakarta", correct: true }, { text: "Surabaya", correct: false }, { text: "Medan", correct: false }] }, { question: "Planet manakah yang dikenal sebagai 'Planet Merah'?", answers: [{ text: "Venus", correct: false }, { text: "Jupiter", correct: false }, { text: "Mars", correct: true }, { text: "Saturnus", correct: false }] }, { question: "Siapakah penemu bola lampu?", answers: [{ text: "Albert Einstein", correct: false }, { text: "Nikola Tesla", correct: false }, { text: "Isaac Newton", correct: false }, { text: "Thomas Edison", correct: true }] }, { question: "Apa nama samudra terbesar di dunia?", answers: [{ text: "Samudra Atlantik", correct: false }, { text: "Samudra Hindia", correct: false }, { text: "Samudra Pasifik", correct: true }, { text: "Samudra Arktik", correct: false }] }, { question: "Berapa jumlah provinsi di Indonesia saat ini (tahun 2024)?", answers: [{ text: "34", correct: false }, { text: "37", correct: false }, { text: "38", correct: true }, { text: "39", correct: false }] }, { question: "Formula kimia untuk air adalah...", answers: [{ text: "CO2", correct: false }, { text: "H2O", correct: true }, { text: "O2", correct: false }, { text: "NaCl", correct: false }] }, { question: "Gunung tertinggi di dunia adalah...", answers: [{ text: "Gunung K2", correct: false }, { text: "Gunung Kangchenjunga", correct: false }, { text: "Gunung Everest", correct: true }, { text: "Gunung Lhotse", correct: false }] }, { question: "Siapakah yang menulis drama 'Romeo and Juliet'?", answers: [{ text: "Charles Dickens", correct: false }, { text: "William Shakespeare", correct: true }, { text: "Mark Twain", correct: false }, { text: "Jane Austen", correct: false }] }, { question: "Apa mata uang negara Jepang?", answers: [{ text: "Won", correct: false }, { text: "Yuan", correct: false }, { text: "Yen", correct: true }, { text: "Ringgit", correct: false }] }, { question: "Dalam mitologi Yunani, siapakah dewa petir?", answers: [{ text: "Apollo", correct: false }, { text: "Hades", correct: false }, { text: "Poseidon", correct: false }, { text: "Zeus", correct: true }] }
+        ];
+
+        const questionElement = document.getElementById("question");
+        const answerButtons = document.getElementById("answer-buttons");
+        const nextButton = document.getElementById("next-btn");
+        const progressText = document.getElementById("progress-text");
+        const progressBar = document.getElementById("progress-bar");
+        const questionContainer = document.getElementById("question-container");
+        const resultContainer = document.getElementById("result-container");
+        const scoreText = document.getElementById("score-text");
+        const resultFeedback = document.getElementById("result-feedback");
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            nextButton.innerHTML = "Berikutnya";
+            nextButton.removeEventListener('click', startQuiz);
+            nextButton.addEventListener('click', handleNextButton);
+            questionContainer.classList.remove('hidden');
+            resultContainer.classList.add('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            
+            // Animasi fade-in untuk pertanyaan baru
+            questionContainer.classList.add('question-fade-enter');
+
+            let currentQuestion = questions[currentQuestionIndex];
+            let questionNo = currentQuestionIndex + 1;
+            questionElement.innerHTML = currentQuestion.question;
+            
+            // Update Progress Bar dan Teks
+            progressText.innerHTML = `Pertanyaan ${questionNo} dari ${questions.length}`;
+            progressBar.style.width = `${(questionNo / questions.length) * 100}%`;
+
+            currentQuestion.answers.forEach(answer => {
+                const button = document.createElement("button");
+                button.innerHTML = `
+                    <span class="flex-grow">${answer.text}</span>
+                    <span class="feedback-icon absolute right-4">
+                        <svg class="w-6 h-6 icon-correct text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <svg class="w-6 h-6 icon-incorrect text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </span>
+                `;
+                button.classList.add("answer-btn", "w-full", "text-left", "p-4", "border-2", "border-gray-300", "dark:border-gray-600", "rounded-xl", "hover:bg-gray-100", "dark:hover:bg-gray-700", "flex", "items-center");
+                button.querySelector('.icon-correct').classList.add('hidden');
+                button.querySelector('.icon-incorrect').classList.add('hidden');
+                answerButtons.appendChild(button);
+                if (answer.correct) {
+                    button.dataset.correct = answer.correct;
+                }
+                button.addEventListener("click", selectAnswer);
+            });
+
+            // Memicu animasi
+            requestAnimationFrame(() => {
+                questionContainer.classList.add('question-fade-enter-active');
+            });
+        }
+
+        function resetState() {
+            questionContainer.classList.remove('question-fade-enter', 'question-fade-enter-active');
+            nextButton.classList.add("hidden");
+            while (answerButtons.firstChild) {
+                answerButtons.removeChild(answerButtons.firstChild);
+            }
+        }
+
+        function selectAnswer(e) {
+            const selectedBtn = e.currentTarget;
+            const isCorrect = selectedBtn.dataset.correct === "true";
+
+            if (isCorrect) {
+                selectedBtn.classList.add("correct");
+                selectedBtn.querySelector('.icon-correct').classList.remove('hidden');
+                score++;
+            } else {
+                selectedBtn.classList.add("incorrect");
+                selectedBtn.querySelector('.icon-incorrect').classList.remove('hidden');
+            }
+
+            Array.from(answerButtons.children).forEach(button => {
+                if (button.dataset.correct === "true") {
+                    if (!button.classList.contains('correct')) {
+                         button.classList.add("correct");
+                         button.querySelector('.icon-correct').classList.remove('hidden');
+                    }
+                }
+                button.disabled = true;
+            });
+            nextButton.classList.remove("hidden");
+        }
+        
+        function showScore(){
+            questionContainer.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+            progressText.innerHTML = "Kuis Selesai!";
+            scoreText.innerHTML = `${score} / ${questions.length}`;
+
+            // Memberikan feedback berdasarkan skor
+            if(score / questions.length >= 0.8) {
+                resultFeedback.innerHTML = "Luar biasa! Pengetahuanmu sangat luas.";
+            } else if (score / questions.length >= 0.5) {
+                resultFeedback.innerHTML = "Bagus! Sedikit lagi untuk jadi master.";
+            } else {
+                resultFeedback.innerHTML = "Jangan menyerah, teruslah belajar dan coba lagi!";
+            }
+
+            nextButton.innerHTML = "Main Lagi";
+            nextButton.classList.remove("hidden");
+            nextButton.removeEventListener('click', handleNextButton);
+            nextButton.addEventListener('click', startQuiz);
+        }
+
+        function handleNextButton() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                showScore();
+            }
+        }
+        
+        nextButton.addEventListener('click', () => {
+             questionElement.innerHTML = "Memuat...";
+             progressText.innerHTML = `Mempersiapkan kuis...`;
+             startQuiz();
+        });
+    </script>
+</body>
+</html>
